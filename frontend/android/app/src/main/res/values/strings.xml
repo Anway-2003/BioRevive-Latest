@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BioRevive</string>
+    <string name="title_activity_main">BioRevive</string>
+    <string name="package_name">com.biorevive.app</string>
+    <string name="custom_url_scheme">com.biorevive.app</string>
+</resources>
