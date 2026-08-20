@@ -6,11 +6,14 @@ import SplashScreen from './pages/SplashScreen'; // Screen 1
 import Onboarding from './pages/Onboarding';   // Screen 2
 import Dashboard from './pages/Dashboard';
 import MapView from './pages/MapView';
+import ResetPassword from './pages/ResetPassword';
 import ZoneDetails from './pages/ZoneDetails';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import AIAnalysis from './pages/AIAnalysis';
 import AIRevivalPlan from './pages/AIRevivalPlan'; 
+import Reports from './pages/Reports';
+import Resources from './pages/Resources';
 import NativeSpecies from './pages/NativeSpecies';
 import AdoptZone from './pages/AdoptZone';
 import UploadCapture from './pages/UploadCapture';
@@ -22,7 +25,7 @@ import ProfileSettings from './pages/ProfileSettings';
 const Layout = ({ children }) => {
   const location = useLocation();
   
-  // Hya screens var navigation bar / sidebar disu naye (Added '/landing')
+  // Hya screens var navigation bar / sidebar disu naye
   const hideNavRoutes = ['/', '/onboarding', '/auth', '/landing'];
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
 
@@ -64,20 +67,25 @@ function App() {
           {/* Core App & Web Routes */}
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          
+          {/* 🔥 MAIN SIDEBAR LINKING FIXED HERE 🔥 */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/ai-analysis" element={<AIAnalysis />} />
+          <Route path="/species" element={<NativeSpecies />} />
+          <Route path="/adopt" element={<AdoptZone />} />
+          <Route path="/adopt/:id" element={<AdoptZone />} />
+          <Route path="/impact" element={<ImpactTracker />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/profile" element={<ProfileSettings />} />
+
+          {/* Hidden/Internal Pages (Open on specific button clicks) */}
           <Route path="/zone/:id" element={<ZoneDetails />} />
-          <Route path="/analysis" element={<AIAnalysis />} /> 
           <Route path="/revival-plan" element={<AIRevivalPlan />} />
-          <Route path="/native-species" element={<NativeSpecies />} />
-          <Route path="/adopt-zone" element={<AdoptZone />} />
           <Route path="/upload" element={<UploadCapture />} />
-          
-          {/* 👇 Hya line chi mistake fix keli ahe */}
           <Route path="/community" element={<CommunityHub />} />
-          
-          <Route path="/reports" element={<ImpactTracker />} />
-          <Route path="/settings" element={<ProfileSettings />} />
+		  <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Fallback */}
           <Route path="*" element={<SplashScreen />} />

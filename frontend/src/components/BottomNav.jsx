@@ -6,6 +6,7 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Hide nav on these pages
   if (location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/auth') {
     return null;
   }
@@ -15,7 +16,8 @@ const BottomNav = () => {
     { label: 'Map', icon: Map, path: '/map' },
     { label: 'Capture', icon: PlusCircle, path: '/upload', isAction: true },
     { label: 'Activity', icon: Users, path: '/community' },
-    { label: 'Profile', icon: User, path: '/settings' },
+    // 🔥 ITHHE CHANGE KELA AHE: '/settings' chya jagi '/profile' taklay
+    { label: 'Profile', icon: User, path: '/profile' }, 
   ];
 
   return (
@@ -29,7 +31,7 @@ const BottomNav = () => {
             <button
               key={idx}
               onClick={() => navigate(item.path)}
-              className="bg-[#114A29] text-white p-3 rounded-full shadow-md -mt-5 hover:bg-green-800 transition flex items-center justify-center"
+              className="bg-[#114A29] text-white p-3 rounded-full shadow-md -mt-5 hover:bg-green-800 transition flex items-center justify-center cursor-pointer"
             >
               <Icon size={24} />
             </button>
@@ -40,7 +42,7 @@ const BottomNav = () => {
           <button
             key={idx}
             onClick={() => navigate(item.path)}
-            className={`flex flex-col items-center gap-1 transition ${
+            className={`flex flex-col items-center gap-1 transition cursor-pointer ${
               isActive ? 'text-[#114A29]' : 'text-gray-400 hover:text-gray-600'
             }`}
           >

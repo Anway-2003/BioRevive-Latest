@@ -1,18 +1,19 @@
 import 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Home, 
   LayoutDashboard, 
   Map, 
-  ShieldAlert, 
+  Activity, 
+  Leaf, 
+  HeartHandshake, 
+  TrendingUp, 
   FileText, 
-  Users, 
-  Settings 
+  BookOpen, 
+  User 
 } from 'lucide-react';
 
 const Sidebar = () => {
   // Styling logic for links (Active vs Inactive)
-  // Active state matches the Auth Page's Login button color (#114A29)
   const linkClasses = ({ isActive }) =>
     `flex items-center gap-4 px-6 py-3.5 mx-4 rounded-xl font-bold transition-all duration-200 ${
       isActive
@@ -21,8 +22,9 @@ const Sidebar = () => {
     }`;
 
   return (
-    // Sidebar Background matches Auth Page Left Panel (#0A2215)
-    <div className="w-64 bg-[#0A2215] text-white fixed h-full shadow-2xl flex flex-col z-50">
+    // 🔥 FIX: 'sticky' chya jagi 'fixed top-0 left-0' kela ahe. 
+    // Yachyane to gap purnpane nighun jail ani layout flush disel!
+    <div className="hidden md:flex w-64 bg-[#0A2215] text-white h-screen shadow-2xl flex-col z-50 fixed top-0 left-0">
       
       {/* Logo Section */}
       <div className="p-8 mb-2">
@@ -32,42 +34,45 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex flex-col gap-2 flex-1 mt-4">
+      <nav className="flex flex-col gap-1.5 flex-1 mt-2 overflow-y-auto pb-4">
         <NavLink to="/dashboard" className={linkClasses}>
           <LayoutDashboard size={20} /> 
           Dashboard
         </NavLink>
         <NavLink to="/map" className={linkClasses}>
           <Map size={20} /> 
-          Explore Map
+          Zones
         </NavLink>
-        <NavLink to="/analysis" className={linkClasses}>
-          <ShieldAlert size={20} /> 
-          AI Analysis
+        <NavLink to="/ai-analysis" className={linkClasses}>
+          <Activity size={20} /> 
+          Analytics
         </NavLink>
-        <NavLink to="/community" className={linkClasses}>
-          <Users size={20} /> 
-          Community
+        <NavLink to="/species" className={linkClasses}>
+          <Leaf size={20} /> 
+          Species
+        </NavLink>
+        <NavLink to="/adopt" className={linkClasses}>
+          <HeartHandshake size={20} /> 
+          Adopt
+        </NavLink>
+        <NavLink to="/impact" className={linkClasses}>
+          <TrendingUp size={20} /> 
+          Impact
         </NavLink>
         <NavLink to="/reports" className={linkClasses}>
           <FileText size={20} /> 
           Reports
         </NavLink>
+        <NavLink to="/resources" className={linkClasses}>
+          <BookOpen size={20} /> 
+          Resources
+        </NavLink>
+        <NavLink to="/profile" className={linkClasses}>
+          <User size={20} /> 
+          Profile
+        </NavLink>
       </nav>
 
-      {/* Bottom Section */}
-      <div className="p-4 mb-6">
-        <div className="border-t border-gray-700/50 mb-4 mx-4"></div>
-        <NavLink to="/" className={linkClasses}>
-          <Home size={20} /> 
-          Landing Page
-        </NavLink>
-        <NavLink to="/settings" className={linkClasses}>
-          <Settings size={20} /> 
-          Settings
-        </NavLink>
-      </div>
-      
     </div>
   );
 };

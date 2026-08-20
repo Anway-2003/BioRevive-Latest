@@ -1,71 +1,65 @@
 import { useState, useEffect } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, User, TrendingUp, Award, ChevronRight, Plus, X, Activity } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import MobileSideMenu from '../components/MobileSideMenu';
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // 1. Supabase Dynamic States
   const [profile, setProfile] = useState(null);
   const [zones, setZones] = useState([]);
   const [reports, setReports] = useState([]);
   const [stats, setStats] = useState({ zonesAdopted: 0, treesPlanted: 0 });
   const [loading, setLoading] = useState(true);
 
-  // Modal States for Adding Activity
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionType, setActionType] = useState('Planted Tree');
   const [description, setDescription] = useState('');
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // 2. Fetch Real Data from Supabase
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      // Get Logged In Auth User
       const { data: { user } } = await supabase.auth.getUser();
-
       if (user) {
-        // Fetch User Profile
         const { data: userProfile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
-
         if (userProfile) setProfile(userProfile);
       }
 
-      // Fetch Real Zones from DB
-      const { data: zonesData } = await supabase
-        .from('zones')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      if (zonesData) {
-        setZones(zonesData);
-        if (zonesData.length > 0) setSelectedZoneId(zonesData[0].id);
+      let fetchedZones = [];
+      try {
+        const response = await fetch('http://localhost:8080/api/zones');
+        if (response.ok) {
+          fetchedZones = await response.json();
+          const recentZones = [...fetchedZones].reverse().slice(0, 3);
+          setZones(recentZones);
+          if (recentZones.length > 0) setSelectedZoneId(recentZones[0].id);
+        }
+      } catch (javaError) {
+        console.error("Java Zones API Error:", javaError);
       }
 
-      // Fetch Real Activity Reports from DB
-      const { data: reportsData } = await supabase
-        .from('reports')
-        .select('*, zones(name)')
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      if (reportsData) setReports(reportsData);
-
-      // Fetch Counts for Stats
-      const { count: zonesCount } = await supabase.from('zones').select('*', { count: 'exact', head: true });
-      const { count: reportsCount } = await supabase.from('reports').select('*', { count: 'exact', head: true });
+      let fetchedReports = [];
+      try {
+        const repResponse = await fetch('http://localhost:8080/api/reports');
+        if (repResponse.ok) {
+          fetchedReports = await repResponse.json();
+          const recentReports = [...fetchedReports].reverse().slice(0, 3);
+          setReports(recentReports);
+        }
+      } catch (javaError) {
+        console.error("Java Reports API Error:", javaError);
+      }
 
       setStats({
-        zonesAdopted: zonesCount || 0,
-        treesPlanted: reportsCount || 0,
+        zonesAdopted: fetchedZones.length || 0, 
+        treesPlanted: fetchedReports.length || 0,
       });
 
     } catch (error) {
@@ -76,10 +70,10 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboardData();
   }, []);
 
-  // 3. Add Activity / Report to Supabase
   const handleAddReport = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -91,30 +85,39 @@ const Dashboard = () => {
         return;
       }
 
-      // Insert Report into 'reports' table
-      const { error: reportError } = await supabase.from('reports').insert([
-        {
-          user_id: user.id,
-          zone_id: selectedZoneId || null,
-          action_type: actionType,
-          description: description || 'Contributed to ecosystem revival.',
-          image_url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=300&q=80'
-        }
-      ]);
+      const newReportData = {
+        userId: user.id,
+        zoneId: selectedZoneId ? parseInt(selectedZoneId) : null,
+        actionType: actionType,
+        description: description || 'Contributed to ecosystem revival.',
+        imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=300&q=80'
+      };
 
-      if (reportError) throw reportError;
+      const response = await fetch('http://localhost:8080/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReportData)
+      });
 
-      // Increment User Points (+10 Points per Activity)
+      if (!response.ok) throw new Error("Failed to save activity in Java Backend");
+
       const currentPoints = profile?.points || 0;
+      const newPoints = currentPoints + 10;
+      
       await supabase
         .from('profiles')
-        .update({ points: currentPoints + 10 })
-        .eq('id', user.id);
+        .upsert({ 
+          id: user.id, 
+          points: newPoints,
+          full_name: profile?.full_name || user.email.split('@')[0] || 'User'
+        });
 
-      alert("🎉 Activity Logged Successfully! (+10 Points Added)");
+      setProfile(prev => ({ ...prev, points: newPoints }));
+
+      alert("🎉 Success! Eco-Activity Logged via Java Server! (+10 Points Added)");
       setIsModalOpen(false);
       setDescription('');
-      loadDashboardData(); // Refresh Data
+      loadDashboardData();
 
     } catch (error) {
       alert("Error: " + error.message);
@@ -132,20 +135,33 @@ const Dashboard = () => {
     }
   };
 
+  const getZoneName = (zId) => {
+    if (!zId) return 'General Zone';
+    const zone = zones.find(z => String(z.id) === String(zId));
+    return zone ? zone.name : 'General Zone';
+  };
+
   return (
-    <div className="relative">
+    <div className="relative transition-all duration-300 w-full bg-[#F8FAFC]">
       
       {/* 📱 1. MOBILE APP VIEW */}
       <div className="block md:hidden min-h-screen bg-[#F8FAFC] pb-24 font-sans">
         
-        {/* Top Header Section */}
-        <div className="bg-[#114A29] text-white px-6 pt-6 pb-8 rounded-b-3xl shadow-md">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <p className="text-xs text-green-200 font-medium">Let's revive our city together</p>
-              <h1 className="text-2xl font-extrabold">Hello, {profile?.full_name || 'Anway'} 👋</h1>
+        {/* Main Green Background Block */}
+        <div className="bg-[#114A29] rounded-b-3xl shadow-md pb-8">
+          
+          <div className="sticky top-0 z-50 bg-[#114A29] px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <MobileSideMenu />
+              <div>
+                <p className="text-[10px] text-green-200 font-medium -mb-1">Let's revive our city</p>
+                <h1 className="text-xl font-extrabold text-white flex items-center">
+                  Hello, {profile?.full_name?.split(' ')[0] || 'Anway'} 👋
+                </h1>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center overflow-hidden shadow">
+            
+            <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex shrink-0 items-center justify-center overflow-hidden shadow">
               <img 
                 src={profile?.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces"} 
                 alt="Profile" 
@@ -154,38 +170,37 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Impact Card */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white shadow-inner">
-            <div className="flex justify-between items-center mb-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-green-200">Your Real Impact</p>
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="bg-green-500 hover:bg-green-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow"
-              >
-                <Plus size={12} /> Log Activity
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-white/5 p-2 rounded-xl border border-white/10">
-                <span className="block text-xl font-black text-white">{stats.zonesAdopted}</span>
-                <span className="text-[10px] text-green-100 font-medium">Total Zones</span>
+          <div className="px-6 mt-3">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white shadow-inner">
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-green-200">Your Real Impact</p>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-green-500 hover:bg-green-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow transition cursor-pointer"
+                >
+                  <Plus size={12} /> Log Activity
+                </button>
               </div>
-              <div className="bg-white/5 p-2 rounded-xl border border-white/10">
-                <span className="block text-xl font-black text-white">{stats.treesPlanted}</span>
-                <span className="text-[10px] text-green-100 font-medium">Activities</span>
-              </div>
-              <div className="bg-white/5 p-2 rounded-xl border border-white/10">
-                <span className="block text-xl font-black text-white">{profile?.points || 0}</span>
-                <span className="text-[10px] text-green-100 font-medium">Points Earned</span>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+                  <span className="block text-xl font-black text-white">{loading ? '...' : stats.zonesAdopted}</span>
+                  <span className="text-[10px] text-green-100 font-medium">Total Zones</span>
+                </div>
+                <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+                  <span className="block text-xl font-black text-white">{loading ? '...' : stats.treesPlanted}</span>
+                  <span className="text-[10px] text-green-100 font-medium">Activities</span>
+                </div>
+                <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+                  <span className="block text-xl font-black text-white">{profile?.points || 0}</span>
+                  <span className="text-[10px] text-green-100 font-medium">Points Earned</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Body */}
         <div className="px-4 -mt-4 space-y-5">
-          
-          {/* Biodiversity / Points Card */}
+          {/* Reward Points */}
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex justify-between items-start mb-3">
               <div>
@@ -202,27 +217,66 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden mt-4">
-              <div className="bg-[#114A29] h-full rounded-full" style={{ width: `${Math.min((profile?.points || 0), 100)}%` }}></div>
+              <div className="bg-[#114A29] h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min((profile?.points || 0), 100)}%` }}></div>
             </div>
           </div>
 
-          {/* Nearby Dead Zones Section */}
+          {/* 🔥 NEW: RECENT ACTIVITY ADDED FOR MOBILE 🔥 */}
           <div>
             <div className="flex justify-between items-center mb-3 px-1">
-              <h3 className="font-extrabold text-gray-800 text-sm tracking-tight">Nearby Dead Zones</h3>
-              <button onClick={() => navigate('/map')} className="text-xs font-bold text-[#114A29]">View All</button>
+              <h3 className="font-extrabold text-gray-800 text-sm tracking-tight">Recent Activity</h3>
+              <button onClick={() => navigate('/impact')} className="text-xs font-bold text-[#114A29] cursor-pointer">View All</button>
+            </div>
+            <div className="space-y-3">
+              {loading ? (
+                <div className="text-center text-xs text-gray-400 font-bold py-4 animate-pulse">Loading activities...</div>
+              ) : reports.length === 0 ? (
+                <div className="text-center text-xs text-gray-400 font-bold py-4 bg-white rounded-2xl border border-gray-100 shadow-sm">No recent activities.</div>
+              ) : (
+                reports.map(report => {
+                  const rType = report.actionType || report.action_type || 'Eco Activity';
+                  const rDesc = report.description || '';
+                  const rZoneId = report.zoneId || report.zone_id;
+                  const rImg = report.imageUrl || report.image_url || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=150&q=80';
+
+                  return (
+                    <div key={report.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                      <img 
+                        src={rImg} 
+                        alt="Activity" 
+                        className="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-200"
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=150&q=80' }}
+                      />
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm mb-0.5">{rType}</h4>
+                        <p className="text-[11px] font-semibold text-gray-500 leading-tight">
+                          {getZoneName(rZoneId)} • {rDesc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Java DB Zones */}
+          <div>
+            <div className="flex justify-between items-center mb-3 px-1">
+              <h3 className="font-extrabold text-gray-800 text-sm tracking-tight">Recent Java DB Zones</h3>
+              <button onClick={() => navigate('/map')} className="text-xs font-bold text-[#114A29] cursor-pointer">View All</button>
             </div>
 
             <div className="space-y-3">
               {loading ? (
-                <div className="text-center text-xs text-gray-400 font-bold py-4">Loading zones...</div>
+                <div className="text-center text-xs text-gray-400 font-bold py-4 animate-pulse">Loading Java zones...</div>
               ) : zones.length === 0 ? (
-                <div className="text-center text-xs text-gray-400 font-bold py-4">No zones available.</div>
+                <div className="text-center text-xs text-gray-400 font-bold py-4 bg-white rounded-2xl border border-gray-100 shadow-sm">No zones available.</div>
               ) : (
                 zones.map((zone) => (
-                  <div key={zone.id} onClick={() => navigate('/map')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer">
+                  <div key={zone.id} onClick={() => navigate('/map')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:border-green-200 transition">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-[#114A29] font-bold text-xs uppercase">
+                      <div className="w-12 h-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-[#114A29] font-bold text-xs uppercase shadow-sm">
                         {zone.status.substring(0,2)}
                       </div>
                       <div>
@@ -238,19 +292,15 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-
         </div>
       </div>
 
-
       {/* 💻 2. DESKTOP / WEB DASHBOARD VIEW */}
-      <div className="hidden md:block p-8 bg-[#F8FAFC] min-h-screen font-sans w-full">
-        
-        {/* Header Section */}
+      <div className="hidden md:block p-8 min-h-screen font-sans w-full">
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-              Welcome, {profile?.full_name || 'Anway'} 👋
+              Welcome, {profile?.full_name?.split(' ')[0] || 'Anway'} 👋
             </h1>
             <p className="text-gray-500 font-medium mt-1">Here's your live impact overview</p>
           </div>
@@ -258,7 +308,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#114A29] hover:bg-green-900 text-white font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 text-sm"
+              className="bg-[#114A29] hover:bg-green-900 text-white font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 text-sm cursor-pointer"
             >
               <Plus size={18} /> Log Activity
             </button>
@@ -273,28 +323,24 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Top Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {[
-            { value: stats.zonesAdopted, label: 'Total Zones' },
-            { value: stats.treesPlanted, label: 'Activities Logged' },
+            { value: loading ? '...' : stats.zonesAdopted, label: 'Total Zones' },
+            { value: loading ? '...' : stats.treesPlanted, label: 'Activities Logged' },
             { value: `${profile?.points || 0} pts`, label: 'Reward Points' },
             { value: '78.4', label: 'Biodiversity Score' },
           ].map((stat, idx) => (
-            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-              <h2 className="text-4xl font-extrabold text-green-800 mb-2">{loading ? '...' : stat.value}</h2>
+            <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transform hover:-translate-y-1 transition duration-300">
+              <h2 className="text-4xl font-black text-green-800 mb-2">{stat.value}</h2>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{stat.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          
-          {/* Chart Section */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-gray-800 text-lg">Biodiversity Score Over Time</h3>
+              <h3 className="font-extrabold text-gray-900 text-lg">Biodiversity Score Over Time</h3>
               <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">+12.6% this month</span>
             </div>
             
@@ -312,7 +358,7 @@ const Dashboard = () => {
                 
                 <svg className="absolute inset-0 h-[calc(100%-1.5rem)] w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
                   <path d="M 0,90 Q 20,85 40,75 T 60,50 T 80,40 T 100,30" fill="none" stroke="#3B82F6" strokeWidth="2" />
-                  <path d="M 0,80 Q 20,70 40,60 T 60,30 T 80,25 T 100,10" fill="none" stroke="#16A34A" strokeWidth="2" />
+                  <path d="M 0,80 Q 20,70 40,60 T 60,30 T 80,25 T 100,10" fill="none" stroke="#16A34A" strokeWidth="3" />
                 </svg>
                 
                 <div className="absolute bottom-0 w-full flex justify-between text-xs text-gray-400 font-medium">
@@ -323,81 +369,92 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Activity Section (Real from DB) */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 overflow-y-auto max-h-[350px] custom-scrollbar">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-gray-800 text-lg">Recent Activity</h3>
-              <button onClick={() => navigate('/map')} className="text-sm font-bold text-green-700 hover:text-green-900 transition">View All</button>
+              <h3 className="font-extrabold text-gray-900 text-lg">Recent Activity</h3>
+              <button onClick={() => navigate('/map')} className="text-sm font-bold text-green-700 hover:text-green-900 transition cursor-pointer">View All</button>
             </div>
             
-            <div className="space-y-5">
+            <div className="space-y-4">
               {loading ? (
-                <div className="text-center text-sm text-gray-400 py-4">Loading activities...</div>
+                <div className="text-center text-sm text-gray-400 py-4 animate-pulse">Loading Java activities...</div>
               ) : reports.length === 0 ? (
-                <div className="text-center text-sm text-gray-400 py-4">No recent activities recorded yet.</div>
+                <div className="text-center text-sm text-gray-400 py-4 bg-gray-50 rounded-xl">No recent activities recorded yet.</div>
               ) : (
-                reports.map(report => (
-                  <div key={report.id} className="flex items-center gap-4 group block">
-                    <img 
-                      src={report.image_url || 'https://images.unsplash.com/photo-1504307651254-35680f356f12?auto=format&fit=crop&w=150&q=80'} 
-                      alt="Activity" 
-                      className="w-12 h-12 rounded-xl object-cover shadow-sm" 
-                    />
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm leading-tight mb-1">{report.action_type}</h4>
-                      <p className="text-xs font-medium text-gray-500">{report.zones?.name || 'General Zone'} • {report.description}</p>
+                reports.map(report => {
+                  const rType = report.actionType || report.action_type || 'Eco Activity';
+                  const rDesc = report.description || '';
+                  const rZoneId = report.zoneId || report.zone_id;
+                  const rImg = report.imageUrl || report.image_url || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=150&q=80';
+
+                  return (
+                    <div key={report.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                      <img 
+                        src={rImg} 
+                        alt="Activity" 
+                        className="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-200"
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=150&q=80' }}
+                      />
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-sm leading-tight mb-1">{rType}</h4>
+                        <p className="text-[11px] font-semibold text-gray-500 leading-tight">
+                          {getZoneName(rZoneId)} • {rDesc}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
-
         </div>
 
-        {/* Bottom Section: Nearby Dead Zones (Real from DB) */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-800 text-lg">Nearby Dead Zones in DB</h3>
-            <button onClick={() => navigate('/map')} className="text-sm font-bold text-green-700 hover:text-green-900 transition">View All</button>
+            <h3 className="font-extrabold text-gray-900 text-lg">Live Zones (Java Backend)</h3>
+            <button onClick={() => navigate('/map')} className="text-sm font-bold text-green-700 hover:text-green-900 transition cursor-pointer">View All Map</button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {zones.map(zone => (
-              <div key={zone.id} onClick={() => navigate('/map')} className="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 transition cursor-pointer border border-transparent hover:border-gray-100 block">
-                <div className="w-16 h-16 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center font-black text-green-800 text-xs">
-                  {zone.status}
+            {loading ? (
+                <p className="text-sm text-gray-500 font-bold col-span-3 text-center">Connecting to Java Server...</p>
+            ) : zones.length === 0 ? (
+                <p className="text-sm text-gray-500 font-bold col-span-3 text-center bg-gray-50 py-4 rounded-xl">No zones in Java Database yet.</p>
+            ) : (
+              zones.map(zone => (
+                <div key={zone.id} onClick={() => navigate('/map')} className="flex gap-4 items-center p-4 rounded-2xl bg-gray-50 hover:bg-green-50 transition cursor-pointer border border-gray-100 hover:border-green-200">
+                  <div className="w-14 h-14 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center font-black text-gray-800 text-sm uppercase">
+                    {zone.status.substring(0, 2)}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-gray-900 text-sm mb-1">{zone.name}</h4>
+                    <p className={`text-xs font-bold ${getStatusColor(zone.status)}`}>
+                      Lat: {zone.latitude?.toFixed(2)}, Long: {zone.longitude?.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1 leading-tight">{zone.name}</h4>
-                  <p className={`text-xs font-bold ${getStatusColor(zone.status)}`}>
-                    Lat: {zone.latitude?.toFixed(2)}, Long: {zone.longitude?.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
-
       </div>
 
-      {/* 🚀 MODAL: LOG NEW ACTIVITY FORM */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative">
             
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
                 <Activity className="text-green-600" size={20} /> Log Eco Activity
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 bg-gray-100 p-1.5 rounded-full cursor-pointer">
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleAddReport} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Select Zone</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Select Zone (Live)</label>
                 <select 
                   value={selectedZoneId}
                   onChange={(e) => setSelectedZoneId(e.target.value)}
@@ -406,6 +463,7 @@ const Dashboard = () => {
                   {zones.map(z => (
                     <option key={z.id} value={z.id}>{z.name}</option>
                   ))}
+                  {zones.length === 0 && <option value="">No Zones Available</option>}
                 </select>
               </div>
 
@@ -437,9 +495,9 @@ const Dashboard = () => {
               <button 
                 type="submit" 
                 disabled={submitting}
-                className="w-full bg-[#114A29] hover:bg-green-900 text-white font-bold py-3.5 rounded-xl transition shadow-md"
+                className="w-full bg-[#114A29] hover:bg-green-900 text-white font-bold py-3.5 rounded-xl transition shadow-md disabled:opacity-70 cursor-pointer"
               >
-                {submitting ? 'Submitting to Supabase...' : 'Submit Activity (+10 Points)'}
+                {submitting ? 'Submitting to Java...' : 'Submit Activity (+10 Points)'}
               </button>
             </form>
 
