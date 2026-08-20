@@ -6,7 +6,9 @@ import SplashScreen from './pages/SplashScreen'; // Screen 1
 import Onboarding from './pages/Onboarding';   // Screen 2
 import Dashboard from './pages/Dashboard';
 import MapView from './pages/MapView';
+
 import ResetPassword from './pages/ResetPassword';
+
 import ZoneDetails from './pages/ZoneDetails';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -85,8 +87,9 @@ function App() {
           <Route path="/revival-plan" element={<AIRevivalPlan />} />
           <Route path="/upload" element={<UploadCapture />} />
           <Route path="/community" element={<CommunityHub />} />
+
 		  <Route path="/reset-password" element={<ResetPassword />} />
-          
+
           {/* Fallback */}
           <Route path="*" element={<SplashScreen />} />
         </Routes>

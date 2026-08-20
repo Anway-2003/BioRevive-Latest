@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "Kharadi Industrial Area",
+    "location": "Pune, Maharashtra",
+    "coordinates": [18.5547, 73.9407],
+    "severityScore": 92,
+    "status": "Critical",
+    "areaSize": 12.4,
+    "causes": ["Industrial Waste", "Soil Pollution", "Vegetation Loss"],
+    "adopted": false
+  },
+  {
+    "id": 2,
+    "name": "Dhanki Riverside Dump",
+    "location": "Dhanki, Maharashtra",
+    "coordinates": [19.8247, 77.9402],
+    "severityScore": 85,
+    "status": "High",
+    "areaSize": 8.7,
+    "causes": ["Water Contamination", "Deforestation"],
+    "adopted": false
+  },
+  {
+    "id": 3,
+    "name": "Hinjewadi Construction Site",
+    "location": "Pune, Maharashtra",
+    "coordinates": [18.5913, 73.7389],
+    "severityScore": 68,
+    "status": "Watch",
+    "areaSize": 15.2,
+    "causes": ["Vegetation Loss", "Chemical Runoff"],
+    "adopted": true
+  }
+]

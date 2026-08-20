@@ -130,7 +130,7 @@ const AuthPage = () => {
           {/* Decorative Illustration Area */}
           <div className="relative h-64 w-full flex items-end justify-center mt-8">
             <div className="absolute bottom-0 w-48 h-48 bg-gradient-to-t from-green-800 to-transparent opacity-50 rounded-full blur-2xl"></div>
-            <div className="z-10 text-8xl drop-shadow-2xl">🌱</div>
+            <div className="z-10 text-8xl drop-shadow-2xl">🌍</div>
           </div>
         </div>
 
