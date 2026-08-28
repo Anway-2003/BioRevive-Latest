@@ -29,17 +29,16 @@ public class ZoneController {
         return zoneRepository.save(zone);
     }
     
-    // 3. Adopt Zone (Fixed path and name overwrite issue)
+    // 3. Adopt Zone (Fixed to return proper JSON map)
     @PostMapping("/{id}/adopt")
-    public ResponseEntity<?> adoptZone(@PathVariable Long id, @RequestBody Map<String, String> payload) {
-        Zone zone = zoneRepository.findById(id).orElseThrow(() -> new RuntimeException("Zone not found with id: " + id));
-        
+    public ResponseEntity<?> adoptZone(@PathVariable Long id, @RequestBody(required = false) Map<String, String> payload) {
+        Zone zone = zoneRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Zone not found with id: " + id));
         
         zone.setStatus("Adopted"); 
-        
-        
-
         zoneRepository.save(zone);
-        return ResponseEntity.ok("Zone Adopted Successfully");
+        
+        // 🔥 Return JSON instead of plain text to avoid frontend fetch crash
+        return ResponseEntity.ok(Map.of("message", "Zone Adopted Successfully", "id", id));
     }
 }

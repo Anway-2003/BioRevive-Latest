@@ -47,8 +47,8 @@ const ProfileSettings = () => {
         }
 
         const [zonesRes, reportsRes] = await Promise.all([
-          fetch('http://10.232.232.50:8080/api/zones'),
-          fetch('http://10.232.232.50:8080/api/reports')
+          fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones'),
+          fetch('http://https://biorevive-backend-6yij.onrender.com/api/reports')
         ]);
 
         let adoptedCount = 0;

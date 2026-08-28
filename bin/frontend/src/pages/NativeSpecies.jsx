@@ -20,7 +20,7 @@ const NativeSpecies = () => {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://10.232.232.50:8080/api/zones');
+        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
         if (response.ok) {
           const data = await response.json();
           setZones(data || []);
