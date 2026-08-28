@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://localhost:8080/api";
+// 🔥 Fix: Render live backend URL as default, fallback or env support
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
 
 // 1. Fetch Live IoT Telemetry Data
 export const fetchTelemetryData = async (zoneId = "zone1") => {
