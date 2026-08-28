@@ -21,10 +21,12 @@ const AIRevivalPlan = () => {
   const [dynamicPhases, setDynamicPhases] = useState([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
+
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
+        const response = await fetch(`${API_BASE_URL}/zones`);
         if (response.ok) {
           const data = await response.json();
           setZones(data || []);
@@ -114,10 +116,8 @@ const AIRevivalPlan = () => {
   return (
     <div className="w-full relative overflow-x-hidden">
       
-      {/* 📱 1. MOBILE APP VIEW (Optimized) */}
+      {/* 📱 1. MOBILE APP VIEW */}
       <div className="block md:hidden min-h-screen bg-[#F8FAFC] font-sans pb-28 relative">
-        
-        {/* Mobile Header */}
         <div className="bg-white px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="text-gray-800 hover:bg-gray-100 p-1.5 rounded-lg transition bg-gray-50">
@@ -125,7 +125,7 @@ const AIRevivalPlan = () => {
             </button>
             <div>
               <h1 className="text-lg font-black text-gray-900 leading-tight flex items-center gap-1">
-                Revival Plan <Sparkles size={14} className={isAiLoading ? 'text-purple-500 animate-pulse' : 'text-purple-500'}/>
+                Revival Plan <Sparkles size={14} className="text-purple-500"/>
               </h1>
               <p className="text-[10px] font-bold text-[#114A29] uppercase tracking-wide">For {activeZoneName}</p>
             </div>
@@ -133,7 +133,6 @@ const AIRevivalPlan = () => {
         </div>
 
         <div className="px-4 mt-5 space-y-6">
-          {/* Mobile Zone Selector */}
           <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-100 flex items-center">
             <div className="pl-4 text-[#114A29]"><MapPin size={18} /></div>
             <select 
@@ -154,7 +153,6 @@ const AIRevivalPlan = () => {
             </div>
           ) : (
             <>
-              {/* 4 Phases Interactive Grid (Compact 2x2) */}
               <div className="grid grid-cols-2 gap-3">
                 {dynamicPhases.map((phase) => (
                   <div 
@@ -181,7 +179,6 @@ const AIRevivalPlan = () => {
                 ))}
               </div>
 
-              {/* Interactive Tabs */}
               <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
                 {[
                   { id: 'timeline', label: 'Timeline' },
@@ -200,7 +197,6 @@ const AIRevivalPlan = () => {
                 ))}
               </div>
 
-              {/* Dynamic Content Area (Mobile) */}
               <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 min-h-[250px]">
                 {currentPhaseData && activeTab === 'timeline' && (
                   <div className="animate-in fade-in duration-300">
@@ -235,7 +231,6 @@ const AIRevivalPlan = () => {
                           </div>
                         </div>
                       ))}
-                      {!currentPhaseData.resources || currentPhaseData.resources.length === 0 ? <p className="text-xs text-gray-400 font-bold">No specific resources listed by AI.</p> : null}
                     </div>
                   </div>
                 )}
@@ -255,13 +250,11 @@ const AIRevivalPlan = () => {
                           </div>
                         );
                       })}
-                      {!currentPhaseData.costs || currentPhaseData.costs.length === 0 ? <p className="text-xs text-gray-400 font-bold">Cost estimation not available.</p> : null}
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Download Button (Mobile) */}
               <button 
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
@@ -275,12 +268,11 @@ const AIRevivalPlan = () => {
         </div>
       </div>
 
-
-      {/* 💻 2. DESKTOP / WEB VIEW */}
+      {/* 💻 2. DESKTOP VIEW */}
       <div className="hidden md:block p-4 md:p-8 bg-[#F8FAFC] min-h-screen font-sans w-full">
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl shadow-sm border border-gray-100 gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-1 flex items-center gap-2">Revival Plan <Sparkles size={20} className={isAiLoading ? 'text-purple-500 animate-pulse' : 'text-purple-500'}/></h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-1 flex items-center gap-2">Revival Plan <Sparkles size={20} className="text-purple-500"/></h1>
             <p className="text-gray-500 font-medium text-sm">System-generated restoration roadmap via Gemini AI</p>
           </div>
           
@@ -357,7 +349,6 @@ const AIRevivalPlan = () => {
                           </div>
                         </div>
                       ))}
-                      {!currentPhaseData.resources || currentPhaseData.resources.length === 0 ? <p className="text-gray-400 font-bold">No specific resources listed.</p> : null}
                     </div>
                   </div>
                 )}

@@ -93,9 +93,12 @@ const MapView = () => {
   const [userLoc, setUserLoc] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
 
+  // 🔥 CLEAN API BASE URL SUPPORT (Fixed double protocol issue)
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
+
   const fetchZones = async () => {
     try {
-      const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
+      const response = await fetch(`${API_BASE_URL}/zones`);
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       setZones(Array.isArray(data) ? data : []); 
@@ -191,7 +194,7 @@ const MapView = () => {
     setSubmitting(true);
     try {
       const newZoneData = { name: zoneName, latitude: newLatLng.lat, longitude: newLatLng.lng, status: zoneStatus };
-      const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones', {
+      const response = await fetch(`${API_BASE_URL}/zones`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newZoneData)
@@ -363,7 +366,6 @@ const MapView = () => {
 
             <div className="w-full h-full z-0 relative">
               {viewMode === 'ai' ? (
-                // 🔥 FIXED: SHIFTED ENTIRE MODULE DOWN BY 80px 🔥
                 <div className="absolute top-[80px] left-0 right-0 bottom-0">
                   <HexagonDeadZoneMap center={mapCenter} onCenterChange={(c) => setMapCenter(c)} />
                 </div>

@@ -1,45 +1,43 @@
 import { useState, useEffect } from 'react';
 
-// Current month se season nikalne ka helper
-const getAutoSeason = () => {
-  const month = new Date().getMonth() + 1; // 1 to 12
-  if (month >= 3 && month <= 6) return "SUMMER";
-  if (month >= 7 && month <= 9) return "MONSOON";
-  if (month >= 10 && month <= 11) return "POST_MONSOON";
-  return "WINTER";
-};
+// 🔥 Fix: Render live backend URL used here!
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
 
-export const useSwarmCycle = (zoneId, telemetryData) => {
+export const useSwarmCycle = (zoneId, telemetry) => {
   const [swarmInsights, setSwarmInsights] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!telemetryData) return;
+    if (!zoneId) return;
 
     const runCycle = async () => {
-      setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8080/api/swarm/execute/${zoneId}`, {
+        // 🔥 Localhost kadhun API_BASE_URL takla ahe
+        const response = await fetch(`${API_BASE_URL}/swarm/execute/${zoneId}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            soilMoisture: telemetryData.soilMoisture,
-            temperature: telemetryData.temperature,
-            npkStatus: telemetryData.npkLevel || "N: Low, P: Med, K: Optimal",
-            currentSeason: getAutoSeason() // Dynamic Season sent to Java
-          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(telemetry || {}) // Telemetry data pathavla
         });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch');
+        }
+
         const data = await response.json();
         setSwarmInsights(data);
-      } catch (err) {
-        console.error("Swarm trigger failed:", err);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error('Swarm trigger failed:', error);
       }
     };
 
     runCycle();
-  }, [zoneId, telemetryData]);
+    
+    // Auto-update every 10 seconds (optional)
+    const intervalId = setInterval(runCycle, 10000);
+    return () => clearInterval(intervalId);
 
-  return { swarmInsights, loading };
+  }, [zoneId, telemetry]);
+
+  return { swarmInsights };
 };

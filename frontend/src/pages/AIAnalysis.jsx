@@ -14,11 +14,13 @@ const AIAnalysis = () => {
   const [aiData, setAiData] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
+
   // Fetch Zones
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
+        const response = await fetch(`${API_BASE_URL}/zones`);
         if (response.ok) {
           const data = await response.json();
           setZones(data || []);
@@ -113,7 +115,6 @@ const AIAnalysis = () => {
   };
 
   return (
-    // 🔥 Added pb-32 so the bottom nav bar doesn't cut the content!
     <div className="w-full min-h-screen bg-[#F8FAFC] p-4 md:p-6 lg:p-8 font-sans pb-32 md:pb-8">
       
       {/* 📱 MOBILE HEADER & SELECTOR */}
@@ -125,7 +126,7 @@ const AIAnalysis = () => {
             </button>
             <div>
               <h1 className="text-lg font-black text-gray-900 leading-tight flex items-center gap-1">
-                AI Analysis <Sparkles size={14} className={isAiLoading ? 'text-purple-500 animate-pulse' : 'text-purple-500'}/>
+                AI Analysis <Sparkles size={14} className="text-purple-500"/>
               </h1>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Powered by Gemini</p>
             </div>
@@ -150,7 +151,7 @@ const AIAnalysis = () => {
       <div className="hidden md:flex mb-8 justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-gray-100 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1 flex items-center gap-2">
-            AI Analysis Report <Sparkles size={20} className={isAiLoading ? 'text-purple-500 animate-pulse' : 'text-purple-500'}/>
+            AI Analysis Report <Sparkles size={20} className="text-purple-500"/>
           </h1>
           <p className="text-gray-500 font-medium text-sm">Powered by Gemini 1.5 Flash</p>
         </div>
@@ -183,7 +184,6 @@ const AIAnalysis = () => {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
             
-            {/* SEVERITY SCORE */}
             <div className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center col-span-2 lg:col-span-1">
               <h3 className="text-[13px] font-extrabold text-gray-800 self-start mb-2">Severity Score</h3>
               <div className="relative w-36 h-20 overflow-hidden mt-2">
@@ -209,21 +209,18 @@ const AIAnalysis = () => {
               </div>
             </div>
 
-            {/* REVIVAL POTENTIAL */}
             <div className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center col-span-1">
               <h3 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Revival Potential</h3>
               <div className="text-2xl font-black text-green-600">{aiData.potential}</div>
               <div className="text-xs font-bold text-gray-500 mt-1">({aiData.potentialScore}%)</div>
             </div>
 
-            {/* RESTORATION TIME */}
             <div className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center col-span-1">
               <h3 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Restoration Time</h3>
               <div className="text-2xl font-black text-gray-900 leading-tight">{aiData.timeframe}</div>
               <div className="text-xs font-bold text-gray-500 mt-1">Estimated duration</div>
             </div>
 
-            {/* AI CONFIDENCE - 🔥 Fixed col-span-2 on mobile so it doesn't look cut off! */}
             <div className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center col-span-2 lg:col-span-1">
               <h3 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">AI Confidence</h3>
               <div className="text-2xl font-black text-gray-900">{aiData.confidence}%</div>

@@ -25,7 +25,38 @@ export const fetchZones = async () => {
   }
 };
 
-// 3. Fetch All Reports/Activities from Java Backend
+// 3. Add New Zone to Java Backend (POST Request Fix)
+export const createZone = async (zoneData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/zones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(zoneData)
+    });
+    if (!response.ok) throw new Error("Failed to save zone in Java Backend");
+    return await response.json();
+  } catch (error) {
+    console.error("Create Zone API Error:", error);
+    throw error;
+  }
+};
+
+// 4. Adopt Zone
+export const adoptZone = async (zoneId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/zones/${zoneId}/adopt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) throw new Error("Failed to adopt zone");
+    return await response.json();
+  } catch (error) {
+    console.error("Adopt Zone API Error:", error);
+    throw error;
+  }
+};
+
+// 5. Fetch All Reports/Activities from Java Backend
 export const fetchReports = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/reports`);
@@ -37,7 +68,7 @@ export const fetchReports = async () => {
   }
 };
 
-// 4. Submit New Activity Report to Java Backend
+// 6. Submit New Activity Report to Java Backend
 export const submitReport = async (reportData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/reports`, {

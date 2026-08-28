@@ -14,7 +14,7 @@ const Reports = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/reports');
+        const response = await fetch('https://biorevive-backend-6yij.onrender.com/api/reports');
         if (response.ok) {
           const data = await response.json();
           if (data && data.length > 0) {

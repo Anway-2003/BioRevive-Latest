@@ -17,10 +17,13 @@ const NativeSpecies = () => {
 
   const categories = ['All', 'Trees', 'Shrubs', 'Grasses', 'Climbers', 'Ground Covers'];
 
+  // 🔥 CLEAN API BASE URL SUPPORT (Fixed double protocol issue)
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://biorevive-backend-6yij.onrender.com/api";
+
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
+        const response = await fetch(`${API_BASE_URL}/zones`);
         if (response.ok) {
           const data = await response.json();
           setZones(data || []);

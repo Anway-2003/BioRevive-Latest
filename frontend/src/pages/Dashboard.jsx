@@ -47,6 +47,7 @@ const Dashboard = () => {
   const [selectedRole, setSelectedRole] = useState('Individual');
   const [savingRole, setSavingRole] = useState(false);
 
+  // 🔥 Fixed: Pass fallback or selected zone ID properly so SwarmInsightsCard activates immediately
   const { swarmInsights } = useSwarmCycle(selectedZoneId || 'zone1', telemetry);
 
   const getSeasonInfo = () => {
@@ -88,7 +89,10 @@ const Dashboard = () => {
         if (isMounted) {
           const recentZones = [...fetchedZones].reverse().slice(0, 3);
           setZones(recentZones);
-          setSelectedZoneId('');
+          // 🔥 FIXED: Automatically select the first zone ID so swarm sensor works immediately
+          if (fetchedZones.length > 0) {
+            setSelectedZoneId(fetchedZones[0].id);
+          }
         }
 
         const fetchedReports = await fetchReports();
@@ -270,7 +274,6 @@ const Dashboard = () => {
     return zone ? zone.name : 'General Zone';
   };
 
-  // 🔥 Mobile Menu Links Array
   const mobileNavLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Zones & Maps', path: '/map', icon: MapIcon },
@@ -286,16 +289,14 @@ const Dashboard = () => {
   return (
     <div className="relative transition-all duration-300 w-full bg-[#F8FAFC]">
 
-      {/* 🚀 MOBILE SLIDING MENU DRAWER (Hamburger List) */}
+      {/* 🚀 MOBILE SLIDING MENU DRAWER */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[99999] flex md:hidden">
-          {/* Dark Overlay Background */}
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           
-          {/* Drawer Sidebar */}
           <div className="relative w-[280px] max-w-[80%] bg-[#0A2215] h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2 text-green-400 font-extrabold text-xl">
@@ -343,7 +344,6 @@ const Dashboard = () => {
         <div className="bg-[#114A29] text-white px-6 pt-6 pb-8 rounded-b-3xl shadow-md">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
-              {/* 🔥 Hamburger Menu Button */}
               <button 
                 onClick={() => setIsMobileMenuOpen(true)} 
                 className="text-white hover:bg-white/10 p-1.5 rounded-lg transition cursor-pointer active:scale-95"
@@ -446,7 +446,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 🔥 Mobile Recent Activity Log */}
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-extrabold text-gray-900 text-sm">Recent Activity</h3>
@@ -460,7 +459,6 @@ const Dashboard = () => {
               ) : (
                 reports.map((report) => {
                   let rDesc = report.description || '';
-                  
                   let displayType = report.actionType || 'Eco Activity';
                   if (rDesc.includes('[ESG_FUNDING]')) {
                     displayType = 'ESG Funding';
@@ -612,7 +610,6 @@ const Dashboard = () => {
               ) : (
                 reports.map((report) => {
                   let rDesc = report.description || '';
-                  
                   let displayType = report.actionType || 'Eco Activity';
                   if (rDesc.includes('[ESG_FUNDING]')) {
                     displayType = 'ESG Funding';
@@ -641,7 +638,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 🚀 MODAL 1: CITIZEN */}
+      {/* Modals */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative">
@@ -678,7 +675,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* 🚀 MODAL 2: NGO */}
       {isNgoModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative">
@@ -710,7 +706,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* 🚀 MODAL 3: CORPORATE */}
       {isCorpModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative">
@@ -750,7 +745,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* 🚀 ONBOARDING MODAL */}
       {showRoleModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative">

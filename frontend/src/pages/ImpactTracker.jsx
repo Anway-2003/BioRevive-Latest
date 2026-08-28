@@ -37,8 +37,8 @@ const ImpactTracker = () => {
 
         // 2. Fetch Real Reports & Zones from Java Spring Boot Backend
         const [reportsRes, zonesRes] = await Promise.all([
-          fetch('http://https://biorevive-backend-6yij.onrender.com/api/reports'),
-          fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones')
+          fetch('https://biorevive-backend-6yij.onrender.com/api/reports'),
+          fetch('https://biorevive-backend-6yij.onrender.com/api/zones')
         ]);
 
         let totalTrees = 0;
