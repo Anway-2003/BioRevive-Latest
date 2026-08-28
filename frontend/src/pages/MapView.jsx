@@ -95,7 +95,7 @@ const MapView = () => {
 
   const fetchZones = async () => {
     try {
-      const response = await fetch('http://10.232.232.50:8080/api/zones');
+      const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       setZones(Array.isArray(data) ? data : []); 
@@ -191,7 +191,7 @@ const MapView = () => {
     setSubmitting(true);
     try {
       const newZoneData = { name: zoneName, latitude: newLatLng.lat, longitude: newLatLng.lng, status: zoneStatus };
-      const response = await fetch('http://10.232.232.50:8080/api/zones', {
+      const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newZoneData)

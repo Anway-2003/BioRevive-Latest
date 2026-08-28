@@ -98,7 +98,7 @@ const UploadCapture = () => {
 
       let newZoneId = null;
       try {
-        const zoneRes = await fetch('http://10.232.232.50:8080/api/zones', {
+        const zoneRes = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newZonePayload)
@@ -120,7 +120,7 @@ const UploadCapture = () => {
         imageUrl: uploadedImageUrl
       };
 
-      await fetch('http://10.232.232.50:8080/api/reports', {
+      await fetch('http://https://biorevive-backend-6yij.onrender.com/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportPayload)

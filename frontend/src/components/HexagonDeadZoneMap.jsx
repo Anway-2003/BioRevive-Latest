@@ -158,7 +158,7 @@ const HexagonDeadZoneMap = ({ center = [18.5204, 73.8567], onCenterChange }) => 
   const handleHexClick = async (hexItem) => {
     setFetchingImage(true);
     try {
-      const res = await fetch(`http://10.232.232.50:8080/api/zones/${hexItem.hexId}/image`);
+      const res = await fetch(`http://https://biorevive-backend-6yij.onrender.com/api/zones/${hexItem.hexId}/image`);
       if (res.ok) {
         const data = await res.json();
         setSelectedHexImage(data);

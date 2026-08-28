@@ -17,7 +17,7 @@ const AdoptZone = () => {
   useEffect(() => {
     const fetchZoneDetails = async () => {
       try {
-        const response = await fetch('http://10.232.232.50:8080/api/zones');
+        const response = await fetch('http://https://biorevive-backend-6yij.onrender.com/api/zones');
         if (response.ok) {
           const listData = await response.json();
           const found = listData.find(z => String(z.id) === String(id));
@@ -52,7 +52,7 @@ const AdoptZone = () => {
     try {
       // 1. JAVA BACKEND API CALL (Update Zone status in MySQL/H2)
       if (id) {
-        await fetch(`http://10.232.232.50:8080/api/zones/${id}/adopt`, {
+        await fetch(`http://https://biorevive-backend-6yij.onrender.com/api/zones/${id}/adopt`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
