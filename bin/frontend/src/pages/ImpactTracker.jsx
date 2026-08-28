@@ -37,8 +37,8 @@ const ImpactTracker = () => {
 
         // 2. Fetch Real Reports & Zones from Java Spring Boot Backend
         const [reportsRes, zonesRes] = await Promise.all([
-          fetch('http://localhost:8080/api/reports'),
-          fetch('http://localhost:8080/api/zones')
+          fetch('http://10.232.232.50:8080/api/reports'),
+          fetch('http://10.232.232.50:8080/api/zones')
         ]);
 
         let totalTrees = 0;

@@ -47,8 +47,8 @@ const ProfileSettings = () => {
         }
 
         const [zonesRes, reportsRes] = await Promise.all([
-          fetch('http://localhost:8080/api/zones'),
-          fetch('http://localhost:8080/api/reports')
+          fetch('http://10.232.232.50:8080/api/zones'),
+          fetch('http://10.232.232.50:8080/api/reports')
         ]);
 
         let adoptedCount = 0;

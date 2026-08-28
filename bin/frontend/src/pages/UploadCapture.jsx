@@ -46,7 +46,7 @@ const UploadCapture = () => {
         imageUrl: previewUrls[0] || 'https://images.unsplash.com/photo-1504307651254-35680f356f12'
       };
 
-      await fetch('http://localhost:8080/api/reports', {
+      await fetch('http://10.232.232.50:8080/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportPayload)

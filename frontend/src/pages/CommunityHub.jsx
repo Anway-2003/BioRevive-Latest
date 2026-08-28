@@ -32,7 +32,7 @@ const CommunityHub = () => {
       }
 
       // Fetch from Java Spring Boot Backend
-      const response = await fetch('http://localhost:8080/api/community/posts');
+      const response = await fetch('http://10.232.232.50:8080/api/community/posts');
       if (response.ok) {
         const data = await response.json();
         if (data && data.length > 0) {
@@ -89,7 +89,7 @@ const CommunityHub = () => {
         avatar: userProfile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'
       };
 
-      await fetch('http://localhost:8080/api/community/posts', {
+      await fetch('http://10.232.232.50:8080/api/community/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPost)

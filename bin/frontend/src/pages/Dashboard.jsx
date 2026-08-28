@@ -33,7 +33,7 @@ const Dashboard = () => {
 
       let fetchedZones = [];
       try {
-        const response = await fetch('http://localhost:8080/api/zones');
+        const response = await fetch('http://10.232.232.50:8080/api/zones');
         if (response.ok) {
           fetchedZones = await response.json();
           const recentZones = [...fetchedZones].reverse().slice(0, 3);
@@ -46,7 +46,7 @@ const Dashboard = () => {
 
       let fetchedReports = [];
       try {
-        const repResponse = await fetch('http://localhost:8080/api/reports');
+        const repResponse = await fetch('http://10.232.232.50:8080/api/reports');
         if (repResponse.ok) {
           fetchedReports = await repResponse.json();
           const recentReports = [...fetchedReports].reverse().slice(0, 3);
@@ -91,7 +91,7 @@ const Dashboard = () => {
         imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=300&q=80'
       };
 
-      const response = await fetch('http://localhost:8080/api/reports', {
+      const response = await fetch('http://10.232.232.50:8080/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newReportData)

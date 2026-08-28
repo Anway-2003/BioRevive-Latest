@@ -21,7 +21,7 @@ const MapView = () => {
 
   const fetchZones = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/zones');
+      const response = await fetch('http://10.232.232.50:8080/api/zones');
       if (!response.ok) throw new Error("Network response was not ok");
       
       const data = await response.json();
@@ -97,7 +97,7 @@ const MapView = () => {
         status: zoneStatus
       };
 
-      const response = await fetch('http://localhost:8080/api/zones', {
+      const response = await fetch('http://10.232.232.50:8080/api/zones', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

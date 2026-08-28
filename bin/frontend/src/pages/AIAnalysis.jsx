@@ -14,7 +14,7 @@ const AIAnalysis = () => {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/zones');
+        const response = await fetch('http://10.232.232.50:8080/api/zones');
         if (response.ok) {
           const data = await response.json();
           setZones(data || []);

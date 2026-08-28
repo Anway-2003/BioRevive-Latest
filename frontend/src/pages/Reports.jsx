@@ -14,7 +14,7 @@ const Reports = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/reports');
+        const response = await fetch('http://10.232.232.50:8080/api/reports');
         if (response.ok) {
           const data = await response.json();
           if (data && data.length > 0) {

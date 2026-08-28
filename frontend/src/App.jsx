@@ -6,7 +6,7 @@ import SplashScreen from './pages/SplashScreen'; // Screen 1
 import Onboarding from './pages/Onboarding';   // Screen 2
 import Dashboard from './pages/Dashboard';
 import MapView from './pages/MapView';
-
+import AdminDashboard from './pages/AdminDashboard';
 import ResetPassword from './pages/ResetPassword';
 
 import ZoneDetails from './pages/ZoneDetails';
@@ -27,8 +27,8 @@ import ProfileSettings from './pages/ProfileSettings';
 const Layout = ({ children }) => {
   const location = useLocation();
   
-  // Hya screens var navigation bar / sidebar disu naye
-  const hideNavRoutes = ['/', '/onboarding', '/auth', '/landing'];
+  // 🔥 FIX: /admin ani /reset-password la list madhe add kela 
+  const hideNavRoutes = ['/', '/onboarding', '/auth', '/landing', '/admin', '/reset-password'];
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
 
   return (
@@ -87,8 +87,8 @@ function App() {
           <Route path="/revival-plan" element={<AIRevivalPlan />} />
           <Route path="/upload" element={<UploadCapture />} />
           <Route path="/community" element={<CommunityHub />} />
-
-		  <Route path="/reset-password" element={<ResetPassword />} />
+		      <Route path="/admin" element={<AdminDashboard />} />
+		      <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Fallback */}
           <Route path="*" element={<SplashScreen />} />
